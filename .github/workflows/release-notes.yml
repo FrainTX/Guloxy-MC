@@ -1,0 +1,24 @@
+name: Обновить описание релиза
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Тег релиза (например v1.0.6). Пусто — версия из package.json'
+        required: false
+
+jobs:
+  notes:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Заменить описание и название
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          TAG="${TAG:-v$(node -p "require('./package.json').version")}"
+          gh release edit "$TAG" --title "Guloxy MC $TAG" --notes-file .github/release-notes.md

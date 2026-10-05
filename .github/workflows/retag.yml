@@ -1,0 +1,18 @@
+name: Перенести тег релиза на текущий коммит
+
+on:
+  workflow_dispatch:
+
+jobs:
+  retag:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Перенести тег
+        shell: bash
+        run: |
+          TAG="v$(node -p "require('./package.json').version")"
+          git tag -f "$TAG" "$GITHUB_SHA"
+          git push -f origin "refs/tags/$TAG"
