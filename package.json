@@ -1,6 +1,6 @@
 {
   "name": "guloxy-mc",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Guloxy MC — конструктор сборок Minecraft с модами из CurseForge и Modrinth",
   "main": "dist-electron/main.cjs",
   "scripts": {

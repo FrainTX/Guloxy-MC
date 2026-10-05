@@ -195,3 +195,16 @@ export async function installOfficial(opts: OfficialInstallOpts): Promise<{ game
   opts.log('ok', `Профиль «${opts.pack.name}» добавлен в официальный лаунчер`);
   return { gameDir, versionId };
 }
+
+/**
+ * Установка для лаунчеров, которые используют общую папку .minecraft без отдельных профилей
+ * (TLauncher, Legacy Launcher и подобные): загрузчик — в versions, моды — в .minecraft/mods.
+ * Чужие jar из mods не удаляются, а переносятся в mods-disabled.
+ */
+export async function installShared(opts: OfficialInstallOpts): Promise<{ gameDir: string; versionId: string }> {
+  const versionId = await installLoaderOfficial(opts);
+  opts.log('info', `Копирую моды в ${opts.mcDir}`);
+  await syncGameDir(opts.mcDir, opts.files, opts.pack);
+  opts.log('ok', `Готово: в списке версий лаунчера выберите ${versionId}`);
+  return { gameDir: opts.mcDir, versionId };
+}

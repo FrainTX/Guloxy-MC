@@ -4,7 +4,7 @@ export type Source = 'modrinth' | 'curseforge';
 export type Loader = 'fabric' | 'quilt' | 'forge' | 'neoforge';
 export type ContentKind = 'mod' | 'resourcepack' | 'shader';
 export type ReleaseChannel = 'release' | 'beta' | 'alpha';
-export type BuildTarget = 'official' | 'prism' | 'mrpack' | 'cfzip';
+export type BuildTarget = 'official' | 'shared' | 'prism' | 'mrpack' | 'cfzip';
 
 export const LOADER_NAMES: Record<Loader, string> = {
   fabric: 'Fabric',

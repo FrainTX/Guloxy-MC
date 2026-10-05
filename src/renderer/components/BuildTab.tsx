@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Archive, Check, FolderOpen, Gamepad2, Hammer, Layers, Package, Square, Trash2 } from 'lucide-react';
+import { Archive, Boxes, Check, FolderOpen, Gamepad2, Hammer, Layers, Package, Square, Trash2 } from 'lucide-react';
 import { api, isElectron } from '../api';
 import { useStore } from '../store';
 import { IssueRow } from './ui';
@@ -9,6 +9,7 @@ import type { BuildStage, BuildTarget, Pack } from '../../shared/types';
 
 const TARGETS: { id: BuildTarget; title: string; sub: string; icon: typeof Package }[] = [
   { id: 'official', title: 'Официальный лаунчер', sub: 'Загрузчик + профиль. Откройте лаунчер и жмите «Играть»', icon: Gamepad2 },
+  { id: 'shared', title: 'TLauncher и другие лаунчеры', sub: 'Загрузчик в versions, моды в .minecraft/mods. В лаунчере выберите появившуюся версию', icon: Boxes },
   { id: 'prism', title: 'Prism Launcher / MultiMC', sub: 'Готовый инстанс или zip для импорта', icon: Layers },
   { id: 'mrpack', title: 'Modrinth .mrpack', sub: 'Файл сборки для Modrinth App и других лаунчеров', icon: Package },
   { id: 'cfzip', title: 'CurseForge .zip', sub: 'Архив для импорта в CurseForge App', icon: Archive },
@@ -200,7 +201,7 @@ export function BuildTab({ pack, openMods }: { pack: Pack; openMods: () => void 
                 </div>
                 {report.outputs.map((o) => (
                   <div className="output" key={o.target + o.path}>
-                    {o.target === 'official' ? <Gamepad2 size={18} /> : o.target === 'prism' ? <Layers size={18} /> : <Package size={18} />}
+                    {o.target === 'official' || o.target === 'shared' ? <Gamepad2 size={18} /> : o.target === 'prism' ? <Layers size={18} /> : <Package size={18} />}
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontWeight: 800 }}>{TARGETS.find((t) => t.id === o.target)?.title}</div>
                       {o.note && <div style={{ fontSize: 12.5, color: 'var(--text-2)' }}>{o.note}</div>}

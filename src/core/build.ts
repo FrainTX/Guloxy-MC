@@ -9,7 +9,7 @@ import { verifyJars, candidateSlugs, type JarInput } from './verifier';
 import { inspectJar, type JarInfo } from './jarinspect';
 import { pickLoaderVersion, requiredJava } from './loaders';
 import { ensureJava } from './java';
-import { installOfficial, type InstallFile } from './install/official';
+import { installOfficial, installShared, type InstallFile } from './install/official';
 import { installPrism, exportPrismZip } from './install/prism';
 import { exportMrpack, exportCurseforgeZip, type ArchiveFile } from './install/archives';
 import { safeName } from './paths';
@@ -282,7 +282,7 @@ export async function buildPack(ctx: BuildContext): Promise<BuildReport> {
   for (const target of ctx.targets) {
     check();
     const stepProgress = (msg: string) =>
-      progress({ stage: target === 'official' ? 'loader' : 'install', message: msg, progress: step / steps });
+      progress({ stage: target === 'official' || target === 'shared' ? 'loader' : 'install', message: msg, progress: step / steps });
     try {
       if (target === 'official') {
         stepProgress('Устанавливаю загрузчик в официальный лаунчер');
@@ -297,6 +297,23 @@ export async function buildPack(ctx: BuildContext): Promise<BuildReport> {
           signal: ctx.signal,
         });
         outputs.push({ target, path: r.gameDir, note: `Профиль «${pack.name}» · ${r.versionId}` });
+      } else if (target === 'shared') {
+        stepProgress('Устанавливаю в общую папку .minecraft');
+        const r = await installShared({
+          mcDir: ctx.settings.minecraftDir,
+          pack,
+          loaderVersion,
+          files: finalFiles,
+          cacheDir: ctx.cacheDir,
+          java: javaFor,
+          log,
+          signal: ctx.signal,
+        });
+        outputs.push({
+          target,
+          path: r.gameDir,
+          note: `В лаунчере выберите версию ${r.versionId}. Прежние моды перенесены в mods-disabled`,
+        });
       } else if (target === 'prism') {
         stepProgress('Создаю инстанс Prism Launcher');
         if (ctx.settings.prismInstancesDir && existsSync(ctx.settings.prismInstancesDir)) {
@@ -345,7 +362,7 @@ export async function buildPack(ctx: BuildContext): Promise<BuildReport> {
 }
 
 function targetName(t: BuildTarget) {
-  return { official: 'официальный лаунчер', prism: 'Prism Launcher', mrpack: '.mrpack', cfzip: 'архив CurseForge' }[t];
+  return { official: 'официальный лаунчер', shared: 'TLauncher и другие лаунчеры', prism: 'Prism Launcher', mrpack: '.mrpack', cfzip: 'архив CurseForge' }[t];
 }
 
 /**
