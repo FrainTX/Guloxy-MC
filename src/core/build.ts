@@ -9,9 +9,9 @@ import { verifyJars, candidateSlugs, type JarInput } from './verifier';
 import { inspectJar, type JarInfo } from './jarinspect';
 import { pickLoaderVersion, requiredJava } from './loaders';
 import { ensureJava } from './java';
-import { installOfficial, installShared, type InstallFile } from './install/official';
+import { installLoaderOfficial, installOfficial, installShared, type InstallFile } from './install/official';
 import { installPrism, exportPrismZip } from './install/prism';
-import { exportMrpack, exportCurseforgeZip, type ArchiveFile } from './install/archives';
+import { exportMrpack, exportCurseforgeZip, exportMinecraftZip, type ArchiveFile } from './install/archives';
 import { safeName } from './paths';
 import { resolveWithFixes } from './replace';
 import { effectiveCfKey } from './builtin';
@@ -282,7 +282,7 @@ export async function buildPack(ctx: BuildContext): Promise<BuildReport> {
   for (const target of ctx.targets) {
     check();
     const stepProgress = (msg: string) =>
-      progress({ stage: target === 'official' || target === 'shared' ? 'loader' : 'install', message: msg, progress: step / steps });
+      progress({ stage: target === 'official' || target === 'shared' || target === 'zip' ? 'loader' : 'install', message: msg, progress: step / steps });
     try {
       if (target === 'official') {
         stepProgress('Устанавливаю загрузчик в официальный лаунчер');
@@ -314,6 +314,24 @@ export async function buildPack(ctx: BuildContext): Promise<BuildReport> {
           path: r.gameDir,
           note: `В лаунчере выберите версию ${r.versionId}. Прежние моды перенесены в mods-disabled`,
         });
+      } else if (target === 'zip') {
+        stepProgress('Собираю ZIP-архив .minecraft');
+        // Загрузчик ставим во временную папку, чтобы забрать готовую версию и библиотеки
+        const zipMc = join(ctx.cacheDir, 'zip-minecraft', `${pack.loader}-${loaderVersion}-${pack.mcVersion}`);
+        const versionId = await installLoaderOfficial({
+          mcDir: zipMc,
+          pack,
+          loaderVersion,
+          files: finalFiles,
+          cacheDir: ctx.cacheDir,
+          java: javaFor,
+          log,
+          signal: ctx.signal,
+        });
+        const dest = join(ctx.exportDir, `${safeName(pack.name)}-${pack.version}.zip`);
+        await exportMinecraftZip(dest, pack, zipMc, versionId, finalFiles, pack.loader === 'forge' || pack.loader === 'neoforge');
+        outputs.push({ target, path: dest, note: `Распакуйте в .minecraft и выберите версию ${versionId}` });
+        log('ok', `Сохранено: ${dest}`);
       } else if (target === 'prism') {
         stepProgress('Создаю инстанс Prism Launcher');
         if (ctx.settings.prismInstancesDir && existsSync(ctx.settings.prismInstancesDir)) {
@@ -362,7 +380,7 @@ export async function buildPack(ctx: BuildContext): Promise<BuildReport> {
 }
 
 function targetName(t: BuildTarget) {
-  return { official: 'официальный лаунчер', shared: 'TLauncher и другие лаунчеры', prism: 'Prism Launcher', mrpack: '.mrpack', cfzip: 'архив CurseForge' }[t];
+  return { official: 'официальный лаунчер', shared: 'TLauncher и другие лаунчеры', zip: 'ZIP-архив .minecraft', prism: 'Prism Launcher', mrpack: '.mrpack', cfzip: 'архив CurseForge' }[t];
 }
 
 /**

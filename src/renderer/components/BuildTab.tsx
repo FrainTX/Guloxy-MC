@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'motion/react';
-import { Archive, Boxes, Check, FolderOpen, Gamepad2, Hammer, Layers, Package, Square, Trash2 } from 'lucide-react';
+import { Archive, Boxes, Check, FileArchive, FolderOpen, Gamepad2, Hammer, Layers, Package, Square, Trash2 } from 'lucide-react';
 import { api, isElectron } from '../api';
 import { useStore } from '../store';
 import { IssueRow } from './ui';
@@ -10,6 +10,7 @@ import type { BuildStage, BuildTarget, Pack } from '../../shared/types';
 const TARGETS: { id: BuildTarget; title: string; sub: string; icon: typeof Package }[] = [
   { id: 'official', title: 'Официальный лаунчер', sub: 'Загрузчик + профиль. Откройте лаунчер и жмите «Играть»', icon: Gamepad2 },
   { id: 'shared', title: 'TLauncher и другие лаунчеры', sub: 'Загрузчик в versions, моды в .minecraft/mods. В лаунчере выберите появившуюся версию', icon: Boxes },
+  { id: 'zip', title: 'ZIP-архив .minecraft', sub: 'Один файл: распакуйте в .minecraft и выберите версию. Удобно скинуть другу', icon: FileArchive },
   { id: 'prism', title: 'Prism Launcher / MultiMC', sub: 'Готовый инстанс или zip для импорта', icon: Layers },
   { id: 'mrpack', title: 'Modrinth .mrpack', sub: 'Файл сборки для Modrinth App и других лаунчеров', icon: Package },
   { id: 'cfzip', title: 'CurseForge .zip', sub: 'Архив для импорта в CurseForge App', icon: Archive },
